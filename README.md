@@ -9,20 +9,34 @@ you are integrating; [`sdk/API.md`](sdk/API.md) is the full reference.
 
 ## Why this is public
 
-Not for the usual reason. This is a support tool that runs in a merchant's page with full DOM
-access — it can read the page, and with the customer's consent it can act in it. The safety case
-for shipping something like that rests on it being readable by people who have no reason to
-trust us, and for as long as this source was private, that case was not one we could actually
-make.
+**Not because it makes the SDK safer.** It does not. Public source prevents nothing — it makes
+malice discoverable by whoever looks, and hardly anyone looks. This repository said otherwise
+until 2026-08-02, listing "traceable to public source" among the things that *prevent* an SDK
+with DOM access from reading credentials. What prevents that is that we do not write that code,
+that the bundle has no runtime dependencies that could, and that we are accountable if either
+stops being true. The rest of this category agrees in practice: Cobrowse.io ships a `dist/`-only
+release repo, and Stripe.js is a megabyte of minified JavaScript with no public source at all.
 
-So the trade is deliberate: **the source is public and unobfuscated, and the licence — not
-obscurity — is what stops it becoming someone else's product.** Obfuscating a bundle that is
-already delivered to every visitor's browser would have protected nothing and cost the only
-property the security argument depends on.
+The actual reasons, which are smaller and hold up:
 
-[`VERIFYING.md`](VERIFYING.md) is the practical end of that: how to check that the bytes running
-in your customers' pages are the ones in this repository, in three commands, without asking us
-for anything.
+- **npm requires it.** Provenance and trusted publishing both refuse a private source repository,
+  and provenance is the one genuine security property here — it stops *someone else* publishing a
+  tarball as us.
+- **Two claims become checkable instead of asserted.** Zero runtime dependencies, and no browser
+  storage anywhere in the shipped bytes. Those are what let you add a script tag instead of
+  opening a legal review, so being able to prove them is worth something.
+- **It is a procurement answer the competition cannot give**, which is a commercial reason and
+  is fine as one.
+
+The rule that follows is narrow, and it is the only one that generates obligations here:
+**anything we claim about the shipped bytes must be checkable against the shipped bytes.** Not
+that the code must be readable, or pretty. `build.mjs` and [`verify.mjs`](verify.mjs) are the
+checks; [`VERIFYING.md`](VERIFYING.md) is how you run them.
+
+That rule is also why the bundle is not obfuscated: it would break verification, which is the
+part doing real work. That obfuscation would protect nothing anyway — the bundle reaches every
+visitor's browser regardless — is why it is not worth revisiting. **The licence, not obscurity,
+is what stops this becoming someone else's product.**
 
 ## What is here, and what is not
 

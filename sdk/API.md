@@ -75,10 +75,10 @@ That is the whole installation. The file creates the instance and publishes it a
 - **`/v1/sky.js`** always serves the latest build and therefore **cannot carry an integrity
   hash**. Fine while you are integrating; do not ship it. SRI and silent auto-update are mutually
   exclusive, and this is a security product.
-- **`/v1/sky.debug.js`** is the same build unminified, for auditing. It ships in every release
-  and is not going away — an obfuscated build would make the masking policy in
-  [`privacy.ts`](src/privacy.ts) unreviewable, which is the part of this SDK a security review
-  most needs to read.
+
+**Reviewing the masking policy?** Read [`privacy.ts`](src/privacy.ts) — it is public, and it is
+39% comments, which is where the reasoning lives. There is deliberately no separate unminified
+build: `esbuild` strips those comments, so it carried the code with none of the argument.
 
 **Loading it does nothing.** No connection, no cookie, no storage, no identifier read, until you
 call a method. There is no `localStorage`, `sessionStorage`, `document.cookie` or `indexedDB`

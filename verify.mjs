@@ -2,24 +2,26 @@
 /**
  * Rebuild a published release from this source and compare it to the tarball on npm.
  *
- * ## What this is for
+ * ## What this is for, and what it is not for
  *
- * The trust model rests part of the SDK's safety on the shipped bytes being traceable to public
- * source *by someone who does not trust us*. For most of this project's life that sentence was
- * false — the repository was private, so the only thing a reader could do was take our word for
- * it. This script is the other half of making it true: provenance says which commit produced the
- * tarball, and this says that commit produces those bytes.
+ * The rule this exists to serve is narrow: **anything we claim about the shipped bytes must be
+ * checkable against the shipped bytes.** The claims are zero runtime dependencies, no browser
+ * storage, and the licence — `build.mjs` checks those against what it emits. This closes the last
+ * gap, between what the build emits and what the registry actually serves.
  *
- * The two are worth keeping apart, because they fail differently:
+ * It is deliberately not framed as a safety property any more. An earlier version of the trust
+ * model listed "traceable to public source" alongside "we do not write that code" as if both
+ * *prevented* an SDK from reading credentials. Only the second one does. This script makes a
+ * dishonest release **discoverable**, by someone who runs it; it does not make one impossible,
+ * and almost nobody runs it. Sold as anything more than that, it is theatre.
  *
- *  - **`npm audit signatures`** proves the registry is serving what our workflow uploaded. It
- *    does not prove our workflow built what this repository says. A compromised workflow file
- *    produces a perfectly valid attestation for the wrong bytes.
+ * Two mechanisms, kept apart because they fail differently:
+ *
+ *  - **`npm audit signatures`** proves the registry is serving what our workflow uploaded, and
+ *    that no third party published as us. That last part is the only genuine security property
+ *    here, and its threat model is not us.
  *  - **This script** proves the source and the artefact agree. It does not prove the source is
- *    honest — read it; that is what it is public for.
- *
- * Neither is worth much alone. Together they close the loop from "I read this code" to "this
- * code is what runs in my customers' browsers", with no step that requires trusting us.
+ *    honest — read it, or do not; it is public either way.
  *
  * ## Usage
  *
@@ -47,7 +49,7 @@ const HERE = dirname(fileURLToPath(import.meta.url));
 const PKG = "@skynet-initiative/sky-remote";
 
 /** Every file the tarball ships that this repository is supposed to be able to reproduce. */
-const ARTEFACTS = ["dist/sky.js", "dist/sky.mjs", "dist/sky.cjs", "dist/sky.debug.js"];
+const ARTEFACTS = ["dist/sky.js", "dist/sky.mjs", "dist/sky.cjs"];
 
 const run = (cmd, args, opts = {}) =>
   execFileSync(cmd, args, { encoding: "utf8", stdio: ["ignore", "pipe", "inherit"], ...opts });

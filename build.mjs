@@ -2,16 +2,28 @@
 /**
  * The build for the three browser artefacts.
  *
- * ## This repository is public, and that is the security argument rather than a concession
+ * ## This repository is public, and that is a commercial property rather than a security one
  *
- * Everything here runs in someone else's page with full DOM access. The trust model rests part
- * of the SDK's safety on the shipped bytes being traceable to public source *by someone who does
- * not trust us* — so the source is public, unobfuscated, and `sky.debug.js` is built unminified
- * for exactly that reader. Obfuscating a bundle that is already delivered to every visitor's
- * browser would protect nothing and would cost the one property that claim depends on.
+ * Everything here runs in someone else's page with full DOM access, and the source is public.
+ * The trust model used to justify that as a safety property — "the shipped bytes are traceable to
+ * public source by someone who does not trust us" — and that framing was withdrawn on 2026-08-02.
+ * Public source prevents nothing; it makes malice discoverable by people who do not look. It is a
+ * commercial and supply-chain property, and the rule that survives is narrower:
  *
- * What protects the work instead is the licence, and `checkLicence` below is why that is a
- * property of the build rather than a line in a README. See `LICENSE` at the repository root.
+ *   **Anything we claim about the shipped bytes must be checkable against the shipped bytes.**
+ *
+ * That is what the three checks at the bottom of this file are, and it is the whole obligation.
+ * It does not oblige the bundle to be pleasant to read: minified is fine, and the separate
+ * unminified `sky.debug.js` was deleted rather than kept, because esbuild strips the comments and
+ * it therefore carried the code with none of the reasoning while `sdk/src/` is public and 39%
+ * comments. No comparable vendor ships one.
+ *
+ * Obfuscation is refused under the same rule — it would break `verify.mjs` and the reproducible
+ * build, which are the checks doing real work. That it would also protect nothing, since the
+ * bundle reaches every visitor's browser anyway, is why it is not worth revisiting.
+ *
+ * What protects the work is the licence, and `checkLicence` below is why that is a property of
+ * the build rather than a line in a README. See `LICENSE` at the repository root.
  *
  * ## What "zero runtime dependencies" means now that there is a build step
  *
@@ -147,8 +159,6 @@ async function buildSdk() {
   // The bundler builds. Named exports, no global, tree-shakeable.
   await bundle("sdk/src/index.ts", "sdk/dist/sky.mjs", "esm", { minify: false });
   await bundle("sdk/src/index.ts", "sdk/dist/sky.cjs", "cjs", { minify: false });
-  // Readable, for anyone auditing what runs on their customers' pages.
-  await bundle("sdk/src/global.ts", "sdk/dist/sky.debug.js", "iife", { minify: false });
 }
 
 // ---------------------------------------------------------------------------

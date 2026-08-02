@@ -1,9 +1,14 @@
 # Verifying what runs in your customers' pages
 
-This SDK runs inside your page with full access to your DOM. You should not have to take our
-word for what it does, and this file is how you avoid having to.
+This SDK runs inside your page with full access to your DOM. Three things about it are
+checkable, by anyone, without asking us for anything — and this file is how.
 
-Three separate things are checkable, by anyone, without asking us for anything.
+**What that is worth, stated first.** Checking makes a dishonest release *discoverable*. It does
+not make one impossible, and realistically almost nobody will run these commands. If you are
+deciding whether to put this in your checkout flow, the things carrying that decision are the
+contract, our attestations, and what happens to us if we abuse it — the same things that carry it
+for Stripe.js, which is a megabyte of minified JavaScript with no public source at all. This page
+is a floor under those, not a substitute for them.
 
 ---
 
@@ -29,9 +34,9 @@ tampered workflow would produce a valid attestation over the wrong bytes. So reb
 ```sh
 git clone https://github.com/Skynet-Initiative/sky-remote-sdk
 cd sky-remote-sdk
-git checkout sdk-v0.1.0        # the tag matching the version you installed
+git checkout sdk-v0.1.2        # the tag matching the version you installed
 npm ci
-node verify.mjs 0.1.0
+node verify.mjs 0.1.2
 ```
 
 `verify.mjs` downloads the published tarball, rebuilds from your checkout, and compares every
@@ -49,7 +54,7 @@ If you use the script tag rather than npm, pin the version and the hash:
 
 ```html
 <script
-  src="https://sdk.skynet-initiative.com/v/0.1.0/sky.js"
+  src="https://sdk.skynet-initiative.com/v/0.1.2/sky.js"
   integrity="sha384-…"
   crossorigin="anonymous"
   data-workspace="pk_live_…"
@@ -59,7 +64,7 @@ If you use the script tag rather than npm, pin the version and the hash:
 Take both values from [`/integrity.json`](https://sdk.skynet-initiative.com/integrity.json),
 which is generated from the bytes the origin actually serves, so it cannot describe a file that
 is not there. The origin itself is laid out from published npm tarballs and verifies each one's
-provenance at image build, so `/v/0.1.0/sky.js` and the npm tarball are the same bytes by
+provenance at image build, so `/v/0.1.2/sky.js` and the npm tarball are the same bytes by
 construction rather than by policy.
 
 `/v/<version>/sky.js` is immutable. `sky.js` without a version moves with each release and
@@ -69,8 +74,10 @@ therefore cannot carry an integrity hash — use it while integrating, not in pr
 
 ## Reading it
 
-`dist/sky.debug.js` is the same bundle built unminified. It is in every release for this reason
-and is not going away.
+Read the source, not the bundle. `sdk/src/` is 39% comments and that is where the reasoning is;
+`esbuild` strips those, so an unminified build would give you the *what* with none of the *why*.
+There used to be one, `sky.debug.js`, and it was removed for exactly that reason — step 2 above
+is the honest version of what it was pretending to offer.
 
 The parts most worth reading, in the order a security review usually wants them:
 
@@ -92,11 +99,16 @@ Stated plainly, because a verification page that oversells itself is worse than 
 - **It says nothing about the engine.** The relay, the control plane and the audit trail are
   closed source. What this SDK sends is checkable from here; what we do with it afterwards is a
   contractual and audit question, not a cryptographic one.
-- **It is a point-in-time check.** It tells you version 0.1.0 is honest. Your lockfile or your
+- **It is a point-in-time check.** It tells you the version you checked is honest. Your lockfile or your
   SRI hash is what stops that answer being replaced without you noticing — which is why this SDK
   has no silent auto-update channel.
 - **A signature is not a safety property.** Reproducible, attested code can still be code you do
-  not want. That is what the source being readable is for.
+  not want. Verification tells you *what* we shipped, never whether shipping it was honest.
+- **Public source prevents nothing.** It makes malice discoverable by whoever looks, and the
+  honest expectation is that hardly anyone does. We used to describe this as part of what keeps
+  the SDK safe; that was a category error and the claim was withdrawn on 2026-08-02. What keeps
+  it safe is that we do not write that code, that the bundle has no runtime dependencies that
+  could, and that we are accountable if either stops being true.
 
 Found a mismatch, or something the source does that this claims it does not?
 <https://github.com/Skynet-Initiative/sky-remote-sdk/issues>. Publishing what you find is

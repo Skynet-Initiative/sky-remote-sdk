@@ -86,7 +86,6 @@ build and therefore **cannot carry an integrity hash**. Use it while you are int
 do not ship it. SRI and silent auto-update are mutually exclusive, and this is a security
 product (the integration contract, embed rule 1).
 
-An unminified build for auditing is at `/v1/sky.debug.js`.
 
 ### Loading it before it has loaded
 
@@ -392,8 +391,8 @@ relationship with it and nothing about your install changes.
 It was Apache-2.0 until this source went public. Apache-2.0 granted redistribution and
 modification without qualification — the one right worth withholding — while protecting nothing,
 since the bundle ships to every visitor's browser regardless. Obfuscating it was the alternative
-and it was rejected: it would have made [`VERIFYING.md`](../VERIFYING.md) impossible and
-`sky.debug.js` pointless, which is most of what a merchant's security review actually needs.
+and it was rejected: it would have broken [`VERIFYING.md`](../VERIFYING.md), which is the thing
+doing real work here.
 
 Two things no licence here gives or takes away. It grants no rights in Skynet Initiative's names
 or marks, and it cannot make a copy of the consent panel *work* — see
