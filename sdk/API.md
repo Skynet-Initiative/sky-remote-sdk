@@ -50,6 +50,11 @@ Your lockfile pins the tarball by integrity hash, which is the same guarantee SR
 tag, and the package is published with provenance — `npm audit signatures` shows you the commit and
 workflow that built it.
 
+That commit is in a repository you can read, and you can go further than checking the signature:
+`node verify.mjs <version>` rebuilds the release from its tag and compares it to the tarball on
+npm, byte for byte. [`VERIFYING.md`](../VERIFYING.md) is the three-command version. This is a
+package that runs in your customers' pages with full DOM access, so it is worth doing once.
+
 ### Script tag — if you paste HTML
 
 ```html
@@ -70,7 +75,10 @@ That is the whole installation. The file creates the instance and publishes it a
 - **`/v1/sky.js`** always serves the latest build and therefore **cannot carry an integrity
   hash**. Fine while you are integrating; do not ship it. SRI and silent auto-update are mutually
   exclusive, and this is a security product.
-- **`/v1/sky.debug.js`** is the same build unminified, for auditing.
+- **`/v1/sky.debug.js`** is the same build unminified, for auditing. It ships in every release
+  and is not going away — an obfuscated build would make the masking policy in
+  [`privacy.ts`](src/privacy.ts) unreviewable, which is the part of this SDK a security review
+  most needs to read.
 
 **Loading it does nothing.** No connection, no cookie, no storage, no identifier read, until you
 call a method. There is no `localStorage`, `sessionStorage`, `document.cookie` or `indexedDB`

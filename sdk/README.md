@@ -374,10 +374,28 @@ product promises.
 
 ## Licence
 
-[Apache-2.0](LICENSE). Use it, embed it, fork it, ship it in a product you sell.
+**[Business Source License 1.1](../LICENSE)** — source-available, not open source. The file is
+what counts; this is what it says:
 
-Two things the licence does not give you, and both are already true without it. It grants no
-rights in Skynet Initiative's names or marks (Apache-2.0 §6), and it cannot make a copy of the
-consent panel *work* — see [above](#the-consent-panel-is-not-yours): what stops a forged panel is
-a non-extractable key inside our origin and an engine that checks the browser-set `Origin`, not a
-term in a licence.
+- **Run it in production on sites and apps you operate, free, with no limit** on users, sessions
+  or page views. Install it from npm, bundle it, self-host the output, modify it.
+- **Do not build a co-browse, screen-sharing or remote-assistance product out of it** and offer
+  that to other people.
+- **Read it, run it, test it and publish a security review of it.** No permission needed, and the
+  licence says so explicitly rather than leaving you to infer it.
+- **On 2030-08-02 it becomes Apache-2.0**, automatically, for every version released under these
+  terms.
+
+If you are integrating this into your own site or product, the first bullet is the whole of your
+relationship with it and nothing about your install changes.
+
+It was Apache-2.0 until this source went public. Apache-2.0 granted redistribution and
+modification without qualification — the one right worth withholding — while protecting nothing,
+since the bundle ships to every visitor's browser regardless. Obfuscating it was the alternative
+and it was rejected: it would have made [`VERIFYING.md`](../VERIFYING.md) impossible and
+`sky.debug.js` pointless, which is most of what a merchant's security review actually needs.
+
+Two things no licence here gives or takes away. It grants no rights in Skynet Initiative's names
+or marks, and it cannot make a copy of the consent panel *work* — see
+[above](#the-consent-panel-is-not-yours): what stops a forged panel is a non-extractable key
+inside our origin and an engine that checks the browser-set `Origin`, not a term in a licence.
