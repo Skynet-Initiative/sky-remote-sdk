@@ -27,9 +27,13 @@
 # Provenance and trusted publishing both refuse a private source repository — `npm publish` used
 # to fail with `E422 … Only public source repositories are supported when publishing with
 # provenance`. That is not an npm quirk to work around: an attestation pointing at a repository
-# nobody can read proves nothing to the person it is meant to reassure. The trust model rests on
-# the shipped bytes being traceable to public source by someone who does not trust us, and this
-# is the half of that which the registry enforces.
+# nobody can read establishes nothing for the person it is meant to reassure.
+#
+# Note the claim this does and does not support. Provenance stops a **third party** publishing a
+# tarball under our name — that is a real security property and it is the reason this repository
+# is public. It says nothing about whether we are honest, and the trust model no longer pretends
+# otherwise: the "traceable to public source" clause was withdrawn on 2026-08-02 for exactly that
+# confusion.
 #
 # ## Why a tag and not a push to main
 #
