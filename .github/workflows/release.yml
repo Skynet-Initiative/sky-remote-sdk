@@ -1,12 +1,16 @@
 # Publish @skynet-initiative/sky-remote to npm.
 #
-# ## No token
+# ## No token, once the first release is out
 #
-# This publishes over **trusted publishing**: npm accepts the release because GitHub's OIDC
+# The destination is **trusted publishing**: npm accepts the release because GitHub's OIDC
 # provider says this workflow, in this repository, on this ref, is asking — not because we handed
-# a long-lived credential to a CI system. There is no `NODE_AUTH_TOKEN` here and no `NPM_TOKEN`
-# secret in this repository, which is the point: a secret that does not exist cannot leak from a
+# a long-lived credential to a CI system. A secret that does not exist cannot leak from a
 # compromised action, a fork's pull request, or a log line.
+#
+# Until then there is an `NPM_TOKEN` secret, because npm will not let a trusted publisher be
+# configured for a package name that has never been published. See the two publish steps at the
+# bottom: the token path warns every time it runs, and deleting the secret is what finishes the
+# migration.
 #
 # It requires a matching trusted publisher on the npm side (Settings → the package → Trusted
 # publishers), configured with:
@@ -51,6 +55,11 @@ jobs:
     name: build · gate · publish
     runs-on: ubuntu-latest
     environment: npm-publish
+    env:
+      # `secrets` is not one of the contexts a step-level `if:` may read — the workflow fails to
+      # parse, with zero jobs and no error attached to anything you would think to look at. Job
+      # level `env` may read it, and step `if:` may read `env`, so the hop is the workaround.
+      HAS_NPM_TOKEN: ${{ secrets.NPM_TOKEN != '' }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -95,7 +104,7 @@ jobs:
       # Left in rather than deleted after the bootstrap because the same problem returns the next
       # time a package is published under a new name.
       - name: npm publish (bootstrap — token)
-        if: ${{ secrets.NPM_TOKEN != '' }}
+        if: env.HAS_NPM_TOKEN == 'true'
         run: |
           echo "::warning::Publishing with a stored token. Configure the trusted publisher on npm and delete the NPM_TOKEN secret; see the header of this workflow."
           npm publish --workspace @skynet-initiative/sky-remote --provenance --access public
@@ -103,7 +112,7 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: npm publish (trusted publishing — no credential)
-        if: ${{ secrets.NPM_TOKEN == '' }}
+        if: env.HAS_NPM_TOKEN != 'true'
         run: npm publish --workspace @skynet-initiative/sky-remote --provenance --access public
 
       - name: What is still manual
