@@ -417,6 +417,29 @@ async function checkPublishable() {
     problems.push("`files` does not list `LICENSE` — the tarball would ship terms nobody can read");
   }
 
+  // **Everything this build puts in the package has to leave in the tarball.**
+  //
+  // The `exports` check above only sees entry points, and that is the narrow half of the problem.
+  // `sky.debug.js` is not an entry point — nothing imports it — so it passed every check while
+  // being built, ignored by `files`, and absent from the tarball. It was found by publishing
+  // 0.1.0 and then running `verify.mjs` against it, which is later than anyone would like:
+  // `deploy/build-sdk-origin.mjs` copies that file out of the installed package, so the SDK
+  // origin's image build would have failed on the first deploy after the first release, and the
+  // unminified build the trust model points auditors at would not have existed.
+  //
+  // So the rule is inverted: the build declares what it emitted, and anything not shipped has to
+  // be named here as a deliberate exclusion rather than silently dropped.
+  const NOT_SHIPPED = new Set([]);
+  for (const path of written) {
+    if (!path.startsWith("sdk/")) continue; // mirror and consent are not published
+    const inPackage = path.slice("sdk/".length);
+    if (NOT_SHIPPED.has(inPackage) || shipped(inPackage)) continue;
+    problems.push(
+      `\`${inPackage}\` is built into the package but \`files\` does not ship it. Add it to ` +
+        "`files`, or to `NOT_SHIPPED` in build.mjs if leaving it out is deliberate"
+    );
+  }
+
   if (!problems.length) {
     const tier = releaseGate ? "publishable" : "packaging is coherent";
     console.log(

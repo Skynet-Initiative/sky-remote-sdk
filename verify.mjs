@@ -38,7 +38,7 @@
 
 import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
-import { mkdtempSync, readFileSync, readdirSync, rmSync, existsSync } from "node:fs";
+import { mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync, existsSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -85,14 +85,26 @@ try {
   console.log(`   ${tarball}`);
 
   console.log("\n2. checking npm provenance");
-  // `npm audit signatures` wants an install tree, not a loose directory.
+  // `npm audit signatures` reads the *project's* dependency tree, so it needs a directory that
+  // looks like a project: a `package.json` naming the dependency and a lockfile beside it.
+  // Installing with `--prefix` into a bare directory populates `node_modules` and writes neither,
+  // and the command then reports "found no installed dependencies to audit" — which reads like a
+  // verification failure and is really an empty question.
   const installed = join(work, "audit");
-  run("npm", ["install", "--prefix", installed, "--no-save", "--ignore-scripts", `${PKG}@${version}`]);
+  mkdirSync(installed, { recursive: true });
+  writeFileSync(
+    join(installed, "package.json"),
+    JSON.stringify({ name: "sky-verify", version: "0.0.0", private: true }, null, 2)
+  );
+  run("npm", ["install", "--ignore-scripts", "--no-audit", "--no-fund", `${PKG}@${version}`], {
+    cwd: installed
+  });
   try {
     const out = run("npm", ["audit", "signatures"], { cwd: installed });
     console.log("   " + out.trim().split("\n").join("\n   "));
-  } catch {
+  } catch (error) {
     console.log("   FAILED — the registry could not vouch for these bytes");
+    console.log("   " + String(error.stdout ?? error.message).trim().split("\n").slice(0, 4).join("\n   "));
     failures++;
   }
 

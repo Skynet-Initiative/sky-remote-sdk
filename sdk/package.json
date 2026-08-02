@@ -1,6 +1,6 @@
 {
   "name": "@skynet-initiative/sky-remote",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Consent-first co-browse for the web. The customer signs, on their own device, before anything is shared.",
   "type": "module",
   "license": "BUSL-1.1",
@@ -34,6 +34,7 @@
     "dist/sky.mjs",
     "dist/sky.cjs",
     "dist/sky.js",
+    "dist/sky.debug.js",
     "dist/types",
     "LICENSE",
     "README.md",
