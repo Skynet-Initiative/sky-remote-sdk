@@ -59,6 +59,17 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+
+      # **The harness serves the built bundle, not the source** — that is the point of it, since
+      # what a merchant loads is `dist/sky.js`. `server.mjs` maps `/sdk/...` onto `sdk/dist`, so
+      # without this step every corpus page 404s on the script it is testing, `window.Sky` never
+      # appears, and each spec waits out its own 30s timeout instead of failing fast.
+      #
+      # The old workflow had no build step and passed anyway, because `packages/sdk/dist` was
+      # committed to git — in a repository whose `.gitignore` said, at length, that build output
+      # is not committed. Removing that contradiction in the split is what exposed this.
+      - run: npm run build
+
       # Chromium only: both harness projects (Desktop Chrome, Pixel 7) are Chromium devices, so
       # installing the full browser set would triple the job for nothing.
       - run: npx playwright install --with-deps chromium
