@@ -1,0 +1,27 @@
+/* Relative `url()` inside a stylesheet resolves against THE STYLESHEET, not against the
+   document. `assets/site.css` referencing `tile.svg` means `assets/tile.svg`, and a
+   serializer that resolves against the document base gets `/tile.svg` and a blank page. */
+@import url("imported.css");
+
+body {
+  font: 16px/1.5 system-ui, sans-serif;
+  color: #14202c;
+  background: url("tile.svg") repeat;
+  margin: 24px;
+}
+
+.card {
+  max-width: 520px;
+  padding: 20px;
+  border: 2px solid #1d6fd8;
+  border-radius: 12px;
+  background: #fff;
+}
+
+h1 { font-size: 28px; margin: 0 0 12px; color: #0b3d91; }
+
+.hero { background-image: url("swatch.svg"); height: 60px; width: 120px; }
+
+@media (max-width: 600px) {
+  .card { border-color: #b3241c; }
+}

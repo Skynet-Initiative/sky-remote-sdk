@@ -1,0 +1,27 @@
+<!doctype html>
+<!--
+  S-8 #1 — everything that made phase 2 mirror an unstyled page.
+
+  Styling lives entirely in a linked stylesheet, which reaches a second one through
+  `@import`, and both use relative `url()` that must resolve against the STYLESHEET rather
+  than the document. Phase 2 stripped the `href` at the console and rendered raw HTML.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>External stylesheet</title>
+<link rel="stylesheet" href="assets/site.css">
+<link rel="preload" href="assets/swatch.svg" as="image">
+<link rel="icon" href="assets/tile.svg">
+</head>
+<body>
+  <div class="card" data-probe="card">
+    <h1 data-probe="title">Order #4417</h1>
+    <p data-probe="body">Two items, shipping to Lyon.</p>
+    <span class="imported-badge" data-probe="badge">Paid</span>
+    <div class="hero" data-probe="hero"></div>
+    <p><img src="assets/swatch.svg" width="120" height="60" alt="Swatch" data-probe="img"></p>
+    <p><a href="/orders/4417" data-probe="link">Open the order</a></p>
+  </div>
+</body>
+</html>

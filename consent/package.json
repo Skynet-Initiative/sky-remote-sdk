@@ -1,0 +1,10 @@
+{
+  "name": "@skynet-initiative/sky-remote-consent",
+  "private": true,
+  "description": "The consent surface. Served as static files from its own origin; never imported by anything.",
+  "type": "module",
+  "scripts": {
+    "build": "node ../build.mjs --only=consent"
+  },
+  "license": "BUSL-1.1"
+}

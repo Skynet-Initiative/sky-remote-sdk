@@ -1,0 +1,108 @@
+# Publish @skynet-initiative/sky-remote to npm.
+#
+# ## No token
+#
+# This publishes over **trusted publishing**: npm accepts the release because GitHub's OIDC
+# provider says this workflow, in this repository, on this ref, is asking — not because we handed
+# a long-lived credential to a CI system. There is no `NODE_AUTH_TOKEN` here and no `NPM_TOKEN`
+# secret in this repository, which is the point: a secret that does not exist cannot leak from a
+# compromised action, a fork's pull request, or a log line.
+#
+# It requires a matching trusted publisher on the npm side (Settings → the package → Trusted
+# publishers), configured with:
+#
+#     repository:  Skynet-Initiative/sky-remote-sdk
+#     workflow:    release.yml
+#     environment: npm-publish
+#
+# npm does not validate that configuration when you save it; a mismatch shows up only here, as a
+# 403 at the publish step. If that happens, the three values above are the first thing to check.
+#
+# ## Why the source repository has to be public for any of this
+#
+# Provenance and trusted publishing both refuse a private source repository — `npm publish` used
+# to fail with `E422 … Only public source repositories are supported when publishing with
+# provenance`. That is not an npm quirk to work around: an attestation pointing at a repository
+# nobody can read proves nothing to the person it is meant to reassure. The trust model rests on
+# the shipped bytes being traceable to public source by someone who does not trust us, and this
+# is the half of that which the registry enforces.
+#
+# ## Why a tag and not a push to main
+#
+# Publishing is irreversible: npm's unpublish window is narrow and a name+version is burned for
+# good afterwards. Releasing is a decision someone makes, not a side effect of merging.
+#
+# ## Tag format: sdk-v<version>
+#
+# Checked against `sdk/package.json`, which is the only place a version is written.
+
+name: release
+
+on:
+  push:
+    tags: ["sdk-v*"]
+
+permissions:
+  contents: read
+  id-token: write # trusted publishing + provenance
+
+jobs:
+  publish:
+    name: build · gate · publish
+    runs-on: ubuntu-latest
+    environment: npm-publish
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          registry-url: https://registry.npmjs.org
+          cache: npm
+
+      # Trusted publishing needs npm 11.5.1 or newer; Node 22 still ships npm 10.
+      - name: Use an npm that can publish without a token
+        run: npm install -g npm@latest
+
+      - run: npm ci
+
+      - name: The tag and the manifest must agree
+        run: |
+          tag="${GITHUB_REF_NAME#sdk-v}"
+          manifest="$(node -p "require('./sdk/package.json').version")"
+          if [ "$tag" != "$manifest" ]; then
+            echo "::error::tag ${GITHUB_REF_NAME} says ${tag}, sdk/package.json says ${manifest}."
+            echo "::error::Publishing would put the wrong bytes under the right name, permanently."
+            exit 1
+          fi
+          echo "releasing ${manifest}"
+
+      # The same gate CI runs: typecheck, tests, the shipped-byte invariants, and two clean
+      # builds compared byte for byte.
+      - run: npm run check
+
+      # `publish-gate` is `publish-check --release`. The licence checks are no longer gated on
+      # it — they run on every commit now that the terms are decided — so this tier is thinner
+      # than it was, and kept because release-only policy will want somewhere to live again.
+      - run: npm run publish-gate
+
+      - name: npm publish
+        run: npm publish --workspace @skynet-initiative/sky-remote --provenance --access public
+
+      - name: What is still manual
+        run: |
+          version="$(node -p "require('./sdk/package.json').version")"
+          cat <<EOF >> "$GITHUB_STEP_SUMMARY"
+          ### Published \`@skynet-initiative/sky-remote@${version}\`
+
+          npm consumers have it now. The script-tag origin does **not** — it is laid out from the
+          registry at image build, so it needs a deploy from the private engine repository:
+
+          1. Deploy the Coolify app that builds \`deploy/Dockerfile.static\`.
+             \`build-sdk-origin.mjs\` will pick up ${version} along with every earlier release,
+             verify each one's provenance, and write \`/v/<version>/sky.js\` plus a regenerated
+             \`integrity.json\`.
+          2. Confirm: \`curl -sS https://sdk.skynet-initiative.com/integrity.json\` should report
+             \`${version}\`.
+          3. Anyone can now check this release for themselves:
+             \`git checkout sdk-v${version} && node verify.mjs ${version}\` — see VERIFYING.md.
+          EOF

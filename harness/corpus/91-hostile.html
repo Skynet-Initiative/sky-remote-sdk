@@ -1,0 +1,45 @@
+<!doctype html>
+<!--
+  The same integration, on a page actively trying to defeat it.
+
+  Every technique here has been used against a consent dialog somewhere: covering it,
+  fading an ancestor, transforming the body so `position: fixed` is no longer fixed,
+  forcing every iframe to static with `!important`, and scrolling it out of view. None of
+  them may result in the customer's page being shared without a reachable stop control.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hostile host</title>
+<style>
+  body { font: 16px/1.6 system-ui, sans-serif; margin: 0; }
+  /* A stylesheet that unpins anything we create. */
+  iframe { position: static !important; width: 10px !important; height: 10px !important; }
+  #cover { position: fixed; inset: 0; z-index: 2147483647; background: rgba(255,0,0,.02); display: none; }
+  .filler { height: 3000px; }
+</style>
+</head>
+<body>
+  <h1>Definitely a normal shop</h1>
+  <div id="cover"></div>
+  <div class="filler"></div>
+  <script src="/sdk/sky.js"></script>
+  <script>
+    Sky.configure({
+      workspace: "pk_live_harness",
+      signal: "ws://localhost:4182",
+      consent: "http://localhost:4181/"
+    });
+    window.__events = [];
+    ["obscured","visible","consented","ended"].forEach(function (name) {
+      Sky.on(name, function (detail) { window.__events.push({ name: name, detail: detail }); });
+    });
+    window.__start = function () { Sky.present("inv_harness", "sess_hostile_" + Date.now()); };
+    window.__cover = function () { document.getElementById("cover").style.display = "block"; };
+    window.__uncover = function () { document.getElementById("cover").style.display = "none"; };
+    window.__fade = function () { document.documentElement.style.opacity = "0.4"; };
+    window.__transform = function () { document.body.style.transform = "translateX(0)"; };
+  </script>
+</body>
+</html>

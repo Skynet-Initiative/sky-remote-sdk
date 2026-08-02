@@ -1,0 +1,11 @@
+/* Reached only through `@import`. A serializer that stops at the top-level sheet
+   renders the page without any of this. */
+.imported-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: #0d8a45;
+  color: #fff;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}

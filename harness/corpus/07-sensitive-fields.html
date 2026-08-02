@@ -1,0 +1,157 @@
+<!doctype html>
+<!--
+  S-8 #7 — the classifier's corpus, and it is deliberately adversarial.
+
+  The privacy rework moved the default from "mask everything" to "mask what is sensitive",
+  which is only defensible if "what is sensitive" is detected without the merchant's help. So
+  every field below is a payment or credential field that a naive implementation misses:
+  anonymous `name`/`id`, `type="text"`, and nothing but an `autocomplete` token, a label, or
+  the shape of the value itself to give it away.
+
+  The pairs matter as much as the positives. Each sensitive field sits next to an innocent
+  field that a lazy heuristic would also catch — a promo code beside a security code, a
+  postcode beside a card number, an order reference that passes a length check but is not a
+  card. A false positive here is an invisible field the agent cannot type into and cannot be
+  told why, which is the failure mode the rework exists to remove; it must not come back in
+  through an over-eager regex.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Checkout</title>
+<style>
+  body { font: 16px/1.5 system-ui, sans-serif; margin: 20px; max-width: 720px; }
+  fieldset { border: 1px solid #c3ccd6; border-radius: 10px; margin-bottom: 14px; }
+  label { display: block; margin: 6px 0; }
+  input, select, textarea { font: inherit; padding: 4px 6px; }
+</style>
+</head>
+<body>
+  <h1 data-probe="heading">Checkout</h1>
+  <p data-probe="blurb">Order #4417 — two items, shipping to Lyon.</p>
+
+  <fieldset>
+    <legend>Payment — every field here must be protected</legend>
+
+    <!-- Detected by autocomplete alone: type is text, name is meaningless. -->
+    <label>Card number
+      <input type="text" name="f1" id="f1" autocomplete="cc-number" value="4242424242424242"
+             data-probe="cc-by-autocomplete">
+    </label>
+
+    <!-- Detected by autocomplete with the section/billing prefixes the spec allows. -->
+    <label>Security code
+      <input type="text" name="f2" id="f2" autocomplete="section-blue billing cc-csc" value="123"
+             data-probe="cvv-by-prefixed-autocomplete">
+    </label>
+
+    <!-- Detected by the name heuristic: no autocomplete at all. -->
+    <label>Verification
+      <input type="text" name="card_cvv" id="f3" value="999" data-probe="cvv-by-name">
+    </label>
+
+    <!-- Detected by its label: every attribute is anonymous. -->
+    <label>CVC
+      <input type="text" name="q7" id="f4" value="456" data-probe="cvv-by-label">
+    </label>
+
+    <!-- Detected by the value's own shape: a Luhn-valid card in a field called `q`. -->
+    <label>Reference
+      <input type="text" name="q" id="f5" value="4111 1111 1111 1111" data-probe="cc-by-value">
+    </label>
+
+    <!-- A password rendered as text behind a show/hide toggle, which a type-only check misses. -->
+    <label>Password
+      <input type="text" name="p" id="f6" autocomplete="current-password" value="hunter2"
+             data-probe="password-as-text">
+    </label>
+
+    <!-- The unconditional type. -->
+    <label>Confirm password
+      <input type="password" id="f7" value="hunter2" data-probe="password-type">
+    </label>
+
+    <!-- A one-time code: an authentication factor, not a payment field. -->
+    <label>Emailed code
+      <input type="text" name="c" id="f8" autocomplete="one-time-code" value="483920"
+             data-probe="otp">
+    </label>
+
+    <!-- An IBAN, caught by name. -->
+    <label>Account
+      <input type="text" name="iban" id="f9" value="FR7630006000011234567890189" data-probe="iban">
+    </label>
+
+    <!-- The merchant's own opt-out marker, honoured with no configuration. -->
+    <label>Internal note
+      <input type="text" name="n" id="f10" class="rr-mask" value="fraud flag: none"
+             data-probe="opt-out-class">
+    </label>
+  </fieldset>
+
+  <fieldset>
+    <legend>Ordinary — every field here must stay readable and typeable</legend>
+
+    <!-- A discount code. `code` alone must not be a trigger. -->
+    <label>Promo code
+      <input type="text" name="promo_code" id="g1" value="SUMMER20" data-probe="promo">
+    </label>
+
+    <!-- A postcode. `postcode` contains `code`; it is not sensitive. -->
+    <label>Postcode
+      <input type="text" name="postcode" id="g2" value="69002" data-probe="postcode">
+    </label>
+
+    <!-- 16 digits that are NOT Luhn-valid: an order reference, not a card. -->
+    <label>Order reference
+      <input type="text" name="order_ref" id="g3" value="1234567812345678" data-probe="order-ref">
+    </label>
+
+    <!-- `cardholder` contains `card`; the name on the card is not the card number, and it is
+         routinely what an agent needs to read back. -->
+    <label>Cardholder name
+      <input type="text" name="cardholder_name" id="g4" value="Jane Dupont" data-probe="cardholder">
+    </label>
+
+    <!-- The address an agent is most often calling about. -->
+    <label>Address
+      <input type="text" name="address1" id="g5" autocomplete="address-line1"
+             value="14 rue de la Ré" data-probe="address">
+    </label>
+
+    <!-- An email address: the single most common thing an agent reads back. -->
+    <label>Email
+      <input type="email" name="email" id="g6" value="jane@example.fr" data-probe="email">
+    </label>
+
+    <!-- Structural: which option was chosen is the point. -->
+    <label>Delivery
+      <select name="ship" id="g7" data-probe="select">
+        <option value="std">Standard</option>
+        <option value="exp" selected>Express</option>
+      </select>
+    </label>
+
+    <label>Gift wrap
+      <input type="checkbox" id="g8" checked data-probe="checkbox">
+    </label>
+
+    <!--
+      A sensitive SELECT, which is the case a corpus of inputs and textareas cannot reach.
+      A `<select>` holds its values as `<option>` TEXT, so masking its `value` property
+      protects nothing: the values are children. Detected here by name, the same way an
+      `<input>` would be, so the test does not depend on merchant configuration.
+    -->
+    <label>Pay with
+      <select name="saved_creditcard" id="f11" data-probe="card-select">
+        <option value="a">Visa ending 4242</option>
+        <option value="b" selected>Amex ending 0005</option>
+      </select>
+    </label>
+
+    <label>Delivery note
+      <textarea name="note" id="g9" data-probe="note">Leave with the concierge</textarea>
+    </label>
+  </fieldset>
+</body>
+</html>

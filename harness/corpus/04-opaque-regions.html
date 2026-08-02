@@ -1,0 +1,40 @@
+<!doctype html>
+<!--
+  S-8 #4 — everything the serializer must REFUSE to represent, next to everything it must.
+
+  A shadow host (open and closed), a canvas, a nested frame, and a password field. Each
+  has to arrive marked with a reason and with no children, and the input chokepoint has to
+  refuse a coordinate landing in any of them. A region that renders as an empty box and is
+  NOT marked is a blind click, which is the failure this rule exists to prevent.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Opaque regions</title>
+<style>
+  body { font: 16px/1.5 system-ui, sans-serif; margin: 16px; }
+  .box { width: 240px; height: 90px; border: 1px solid #ccc; margin: 0 0 12px; }
+</style>
+</head>
+<body>
+  <h1 data-probe="title">Payment</h1>
+
+  <div class="box" id="open-host" data-probe="open-shadow"></div>
+  <my-widget class="box" id="closed-host" data-probe="closed-shadow"></my-widget>
+  <canvas class="box" id="chart" data-probe="canvas" width="240" height="90"></canvas>
+  <iframe class="box" id="pay" data-probe="frame" src="about:blank" title="Payment frame"></iframe>
+
+  <p><label>Card <input id="card" data-probe="masked" type="password" value="4242424242424242"></label></p>
+  <p><label>Name <input id="name" data-probe="clear" type="text" value="Jane Dupont"></label></p>
+  <p><button id="safe" data-probe="button">Pay now</button></p>
+
+  <script>
+    var open = document.getElementById("open-host").attachShadow({ mode: "open" });
+    open.innerHTML = "<style>p{color:#b3241c}</style><p>Inside an open shadow root</p>";
+    document.getElementById("closed-host").attachShadow({ mode: "closed" });
+    var ctx = document.getElementById("chart").getContext("2d");
+    ctx.fillStyle = "#1d6fd8";
+    ctx.fillRect(10, 10, 200, 60);
+  </script>
+</body>
+</html>

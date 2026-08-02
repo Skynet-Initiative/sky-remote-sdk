@@ -1,0 +1,62 @@
+{
+  "name": "@skynet-initiative/sky-remote",
+  "version": "0.1.0",
+  "description": "Consent-first co-browse for the web. The customer signs, on their own device, before anything is shared.",
+  "type": "module",
+  "license": "BUSL-1.1",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Skynet-Initiative/sky-remote-sdk.git",
+    "directory": "sdk"
+  },
+  "homepage": "https://github.com/Skynet-Initiative/sky-remote-sdk/tree/main/sdk#readme",
+  "bugs": "https://github.com/Skynet-Initiative/sky-remote-sdk/issues",
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "sideEffects": false,
+  "main": "./dist/sky.cjs",
+  "module": "./dist/sky.mjs",
+  "types": "./dist/types/sdk/src/index.d.ts",
+  "unpkg": "./dist/sky.js",
+  "exports": {
+    ".": {
+      "types": "./dist/types/sdk/src/index.d.ts",
+      "import": "./dist/sky.mjs",
+      "require": "./dist/sky.cjs",
+      "default": "./dist/sky.mjs"
+    },
+    "./sky.js": "./dist/sky.js",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist/sky.mjs",
+    "dist/sky.cjs",
+    "dist/sky.js",
+    "dist/types",
+    "LICENSE",
+    "README.md",
+    "API.md"
+  ],
+  "keywords": [
+    "co-browse",
+    "cobrowse",
+    "remote-assistance",
+    "support",
+    "consent"
+  ],
+  "scripts": {
+    "build": "node ../build.mjs --only=sdk"
+  },
+  "dependencies": {},
+  "browserslist": [
+    "chrome >= 100",
+    "firefox >= 100",
+    "safari >= 15.4",
+    "edge >= 100"
+  ],
+  "engines": {
+    "node": ">=18"
+  }
+}

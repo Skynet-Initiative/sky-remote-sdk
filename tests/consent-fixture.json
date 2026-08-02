@@ -1,0 +1,172 @@
+[
+  {
+    "descriptor": {
+      "agent": "actor-opaque-7f",
+      "ceiling": {
+        "access": "view",
+        "clipboard": "none",
+        "expires_at_unix": 1800001800,
+        "file_transfer": "none",
+        "max_duration_ms": 1800000,
+        "surfaces": [
+          {
+            "kind": "document"
+          }
+        ],
+        "tier": "t0"
+      },
+      "display_identity": {
+        "legal_name": "Cyclo SAS",
+        "logo_uri": null,
+        "verification_authority": null,
+        "verified_at": null
+      },
+      "issued_at": 1800000000,
+      "mode": "cobrowse",
+      "origin": "http://localhost:5173",
+      "scope_text": "Cyclo SAS can see this page. You can stop at any time.",
+      "session": "sess_4c90bb1177de4a2f81c05e93aa17d604",
+      "session_public_key": "AwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwM=",
+      "workspace": "ws_8f21a4c9006b4e1d9f3c72b5ad0e6182"
+    },
+    "digest_base64": "gAbI5IYPrBc+CSoH1xdHHC+eL2SQW7Leij8fYgQAQiA=",
+    "name": "cobrowse-view"
+  },
+  {
+    "descriptor": {
+      "agent": "actor-opaque-7f",
+      "ceiling": {
+        "access": "control",
+        "clipboard": "none",
+        "expires_at_unix": 1800001800,
+        "file_transfer": "none",
+        "max_duration_ms": 1800000,
+        "surfaces": [
+          {
+            "kind": "document"
+          }
+        ],
+        "tier": "t0"
+      },
+      "display_identity": {
+        "legal_name": "Cyclo SAS",
+        "logo_uri": null,
+        "verification_authority": null,
+        "verified_at": null
+      },
+      "issued_at": 1800000000,
+      "mode": "cobrowse",
+      "origin": "http://localhost:5173",
+      "scope_text": "Cyclo SAS can see this page. You can stop at any time.",
+      "session": "sess_4c90bb1177de4a2f81c05e93aa17d604",
+      "session_public_key": "AwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwM=",
+      "workspace": "ws_8f21a4c9006b4e1d9f3c72b5ad0e6182"
+    },
+    "digest_base64": "j2G5vEa5g70S0KEblZO+u9/ybAe9xIyr8o28CrE3Tsw=",
+    "name": "cobrowse-control"
+  },
+  {
+    "descriptor": {
+      "agent": "actor-opaque-7f",
+      "ceiling": {
+        "access": "view",
+        "clipboard": "none",
+        "expires_at_unix": 1800001800,
+        "file_transfer": "none",
+        "max_duration_ms": 1800000,
+        "surfaces": [
+          {
+            "kind": "document"
+          }
+        ],
+        "tier": "t0"
+      },
+      "display_identity": {
+        "legal_name": "Cyclo SAS",
+        "logo_uri": "https://cyclo.fr/logo.png",
+        "verification_authority": "greffe",
+        "verified_at": 1700000000
+      },
+      "issued_at": 1800000000,
+      "mode": "cobrowse",
+      "origin": "http://localhost:5173",
+      "scope_text": "Cyclo SAS can see this page. You can stop at any time.",
+      "session": "sess_4c90bb1177de4a2f81c05e93aa17d604",
+      "session_public_key": "AwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwM=",
+      "workspace": "ws_8f21a4c9006b4e1d9f3c72b5ad0e6182"
+    },
+    "digest_base64": "RVs4RipDPyeRtzrZBKzTSYbCgk1O4JXWy9Ne0imGMRY=",
+    "name": "cobrowse-verified"
+  },
+  {
+    "descriptor": {
+      "agent": "actor-opaque-7f",
+      "ceiling": {
+        "access": "view",
+        "clipboard": "none",
+        "expires_at_unix": 1800001800,
+        "file_transfer": "none",
+        "max_duration_ms": 1800000,
+        "surfaces": [
+          {
+            "kind": "document"
+          }
+        ],
+        "tier": "t0"
+      },
+      "display_identity": {
+        "legal_name": "Café Crème & Fils — Société Anonyme 🥐",
+        "logo_uri": null,
+        "verification_authority": null,
+        "verified_at": null
+      },
+      "issued_at": 1800000000,
+      "mode": "cobrowse",
+      "origin": "http://localhost:5173",
+      "scope_text": "Café Crème peut voir cette page. Arrêtez à tout moment.",
+      "session": "sess_4c90bb1177de4a2f81c05e93aa17d604",
+      "session_public_key": "AwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwM=",
+      "workspace": "ws_8f21a4c9006b4e1d9f3c72b5ad0e6182"
+    },
+    "digest_base64": "GHRrlHzh0h0XdpWocbiHcqY+Gpas8S7DtDnqIoIOyRM=",
+    "name": "cobrowse-unicode"
+  },
+  {
+    "descriptor": {
+      "agent": "actor-opaque-7f",
+      "ceiling": {
+        "access": "control",
+        "clipboard": "to_agent",
+        "expires_at_unix": 1800001800,
+        "file_transfer": "single_file_explicit",
+        "max_duration_ms": 1800000,
+        "surfaces": [
+          {
+            "index": 0,
+            "kind": "display"
+          },
+          {
+            "index": 1,
+            "kind": "display"
+          }
+        ],
+        "tier": "t1"
+      },
+      "display_identity": {
+        "legal_name": "Cyclo SAS",
+        "logo_uri": null,
+        "verification_authority": "greffe",
+        "verified_at": 1700000000
+      },
+      "issued_at": 1800000000,
+      "mode": "screen",
+      "origin": null,
+      "scope_text": "Cyclo SAS can see this page. You can stop at any time.",
+      "session": "sess_4c90bb1177de4a2f81c05e93aa17d604",
+      "session_public_key": "AwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwM=",
+      "workspace": "ws_8f21a4c9006b4e1d9f3c72b5ad0e6182"
+    },
+    "digest_base64": "ce4MtcJS5kfjqHVvN4YCPiioTuEBy6xxe0MwbtCIhyw=",
+    "name": "screen"
+  }
+]

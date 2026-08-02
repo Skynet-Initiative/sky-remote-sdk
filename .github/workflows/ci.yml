@@ -1,0 +1,72 @@
+# The browser artefacts, on every change.
+#
+# This repository had no CI of its own until the split, and the two defects that reached a real
+# customer (the mirror showing unstyled HTML, the consent panel cropped to 150px) were both a
+# single automated page load away from being caught — which is why the browser job is here and
+# not deferred as a nice-to-have.
+#
+# `check` and `browser` are separate jobs on purpose. `check` is the gate the release path also
+# runs; a Playwright flake must not be able to make a release look unsafe.
+#
+# ## This job no longer needs a Rust toolchain, and that is not a loosening
+#
+# It used to. `tests/canonical.test.ts` recomputes the consent digest against a fixture that the
+# engine's `consent_fixture.rs` wrote, so CI had to build the Rust crate first just to produce a
+# file. The engine is now in a separate, private repository and the fixture is committed here —
+# so this side pins the TypeScript encoder against known-good digests, and the engine's CI
+# regenerates the file and fails if it differs from the copy in this repository.
+#
+# The pin is stronger than it was: the expected digests are now reviewable in a diff instead of
+# being regenerated on every run by the very code they were supposed to be checking.
+
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    name: typecheck · test · invariants · reproducible
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+
+      # typecheck + node:test + a build carrying the invariants that are product claims rather
+      # than hygiene: zero runtime dependencies, no browser storage anywhere in the built bytes,
+      # the licence agreeing across manifest/file/banner, and every `exports` entry point present
+      # in the tarball's `files` allowlist. Then two clean builds compared byte for byte, because
+      # VERIFYING.md tells integrators to do exactly that against a release.
+      - run: npm run check
+
+  browser:
+    name: browser (laptop · phone)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      # Chromium only: both harness projects (Desktop Chrome, Pixel 7) are Chromium devices, so
+      # installing the full browser set would triple the job for nothing.
+      - run: npx playwright install --with-deps chromium
+        working-directory: harness
+      - run: npm run test:browser
+      - if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-traces
+          path: harness/test-results/
+          retention-days: 7

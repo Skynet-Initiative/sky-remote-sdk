@@ -1,0 +1,38 @@
+{
+  "name": "@skynet-initiative/sky-remote-workspace",
+  "private": true,
+  "description": "Public source for the sky-remote browser artefacts: the in-page SDK, the consent surface and the mirror rebuilder. Only the SDK is published to npm; it carries the version, and `npm version` in that directory is what moves it. The engine, control plane and deployment configuration are in the private Skynet-Initiative/sky-remote repository.",
+  "license": "BUSL-1.1",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Skynet-Initiative/sky-remote-sdk.git"
+  },
+  "type": "module",
+  "workspaces": [
+    "sdk",
+    "mirror",
+    "consent",
+    "harness"
+  ],
+  "scripts": {
+    "types": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "build": "npm run types && node build.mjs",
+    "dev": "node build.mjs --watch",
+    "test": "node --test --experimental-strip-types \"tests/*.test.ts\"",
+    "test:browser": "npm --workspace @skynet-initiative/sky-remote-harness run test",
+    "publish-check": "npm run types && node build.mjs --publish-check",
+    "publish-gate": "npm run types && node build.mjs --publish-check --release",
+    "reproducible": "npm run types && node reproducible.mjs",
+    "verify": "node verify.mjs",
+    "check": "npm run typecheck && npm run test && npm run publish-check && npm run reproducible"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "esbuild": "^0.24.2",
+    "typescript": "^5.7.2"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

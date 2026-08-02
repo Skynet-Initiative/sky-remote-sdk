@@ -1,0 +1,15 @@
+{
+  "name": "@skynet-initiative/sky-remote-harness",
+  "private": true,
+  "description": "The browser test harness and the S-8 corpus. Never shipped.",
+  "type": "module",
+  "scripts": {
+    "test": "playwright test",
+    "serve": "node server.mjs"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.49.1",
+    "esbuild": "^0.28.1",
+    "ws": "^8.21.1"
+  }
+}

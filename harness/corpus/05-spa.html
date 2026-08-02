@@ -1,0 +1,59 @@
+<!doctype html>
+<!--
+  S-8 #5 — a single-page application, which is where a snapshot-only serializer stops being
+  true within a second of being taken.
+
+  A list rendered after load, a route change through `pushState`, a panel scrolled away
+  from its origin, an SVG icon set, live field values, and a stylesheet loaded late by a
+  code-split route.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>SPA</title>
+<style>
+  body { font: 16px/1.5 system-ui, sans-serif; margin: 0; color: #14202c; }
+  header { padding: 12px 20px; background: #0b3d91; color: #fff; font-weight: 700; }
+  #panel { height: 140px; overflow-y: auto; border: 1px solid #dfe4ea; margin: 20px; padding: 12px; }
+  .row { padding: 8px 0; border-bottom: 1px solid #eef2f7; }
+  svg { vertical-align: -3px; }
+</style>
+</head>
+<body>
+  <header data-probe="header">Support · <span id="route">/orders</span></header>
+  <div id="panel" data-probe="panel">
+    <div class="row" data-probe="row0">Loading…</div>
+  </div>
+  <p style="margin:20px">
+    <svg width="20" height="20" viewBox="0 0 20 20" data-probe="icon" aria-hidden="true">
+      <circle cx="10" cy="10" r="8" fill="#0d8a45"></circle>
+      <path d="M6 10l3 3 5-6" stroke="#fff" stroke-width="2" fill="none"></path>
+    </svg>
+    <input id="q" data-probe="field" value="" placeholder="Search orders">
+  </p>
+  <script>
+    window.renderList = function (n) {
+      var panel = document.getElementById("panel");
+      panel.innerHTML = "";
+      for (var i = 0; i < n; i++) {
+        var row = document.createElement("div");
+        row.className = "row";
+        row.dataset.probe = "row" + i;
+        row.textContent = "Order #" + (4400 + i) + " — dispatched";
+        panel.appendChild(row);
+      }
+    };
+    window.navigateTo = function (path) {
+      history.pushState({}, "", path);
+      document.getElementById("route").textContent = path;
+    };
+    window.loadLateStylesheet = function () {
+      var link = document.createElement("link");
+      link.rel = "stylesheet";
+      link.href = "assets/imported.css";
+      document.head.appendChild(link);
+    };
+    renderList(12);
+  </script>
+</body>
+</html>

@@ -1,0 +1,32 @@
+<!doctype html>
+<!--
+  S-8 #3 — constructed stylesheets, adopted by reference.
+
+  `document.adoptedStyleSheets` belongs to no element, so a serializer that only walks the
+  DOM misses every rule. For a design system built this way that is all of its styling.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Adopted stylesheets</title>
+</head>
+<body>
+  <main class="ds-shell" data-probe="shell">
+    <h1 class="ds-h1" data-probe="title">Account</h1>
+    <p class="ds-lead" data-probe="lead">Your plan renews on 12 August.</p>
+    <div class="ds-row" data-probe="row"><span class="ds-pill" data-probe="pill">Pro</span></div>
+  </main>
+  <script>
+    var sheet = new CSSStyleSheet();
+    sheet.replaceSync([
+      "body{margin:0;font:16px/1.5 system-ui,sans-serif;background:#f5f7f9}",
+      ".ds-shell{margin:32px auto;max-width:560px;padding:28px;background:#fff;border-radius:18px;box-shadow:0 8px 30px rgba(15,20,25,.12)}",
+      ".ds-h1{font-size:30px;margin:0 0 10px;letter-spacing:-.02em}",
+      ".ds-lead{color:#626d79;margin:0 0 20px}",
+      ".ds-row{display:flex;gap:8px}",
+      ".ds-pill{background:#0b4fd8;color:#fff;border-radius:999px;padding:6px 14px;font-weight:700;font-size:13px}"
+    ].join("\n"));
+    document.adoptedStyleSheets = [sheet];
+  </script>
+</body>
+</html>

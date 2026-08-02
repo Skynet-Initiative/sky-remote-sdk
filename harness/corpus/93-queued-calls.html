@@ -1,0 +1,41 @@
+<!doctype html>
+<!--
+  The queue pattern from `sdk/API.md`, exercised for real.
+
+  A page that pushes calls before the bundle has arrived must end up in the same state as one
+  that waited for it — that is the entire reason the snippet is allowed in `<head>`. The script
+  below is `async` and the pushes happen above it, so the replay path is the one under test
+  rather than an accident of load order.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Queued calls</title>
+<script>
+  // Exactly what the documentation tells an integrator to write.
+  window.Sky = window.Sky || [];
+  window.__queueResult = { configured: false, listener: false };
+  Sky.push(["configure", { workspace: "pk_live_harness", signal: "ws://localhost:4182", consent: "http://localhost:4181/" }]);
+  Sky.push(["on", "state", function () { window.__queueResult.listener = true; }]);
+</script>
+<script src="/sdk/sky.js" async></script>
+</head>
+<body>
+  <h1>Queued calls</h1>
+  <p id="status">idle</p>
+  <script>
+    // Once the real API has replaced the array, record what the replay actually achieved.
+    (function check() {
+      if (Array.isArray(window.Sky) || typeof window.Sky !== "object") {
+        window.setTimeout(check, 20);
+        return;
+      }
+      // `configure` returns the resolved config, so asking again is a read rather than a write.
+      var resolved = window.Sky.configure();
+      window.__queueResult.configured = resolved.workspaceKey === "pk_live_harness";
+      // The listener registered from the queue is proven by driving a state change.
+      window.Sky.requestAssistance();
+    })();
+  </script>
+</body>
+</html>

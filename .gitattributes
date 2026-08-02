@@ -1,0 +1,7 @@
+# Normalise to LF in the repository and on checkout, on every platform. This package is
+# developed on Windows and deployed on Linux, and neither Rust's tooling nor Postgres cares —
+# but a file that changes line endings on checkout produces diffs that are entirely noise.
+* text=auto eol=lf
+
+# Generated, and not worth reviewing line by line.
+Cargo.lock linguist-generated=true

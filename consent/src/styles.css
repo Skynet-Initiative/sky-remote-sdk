@@ -1,0 +1,497 @@
+/*
+ * The consent surface's presentation.
+ *
+ * Inlined into `index.html` at build time, because `default-src 'none'` means this origin
+ * fetches nothing and a consent dialog that renders unstyled while a stylesheet loads is a
+ * consent dialog the customer reads in the wrong order.
+ *
+ * LAYOUT RULE, load-bearing rather than cosmetic. **Nothing here sizes itself from its
+ * content.** In the `ask` state this document fills the whole viewport and lays a card out
+ * inside it: header fixed, body scrolling, actions pinned to the bottom. A paragraph that
+ * grows scrolls the body and cannot push a button out of view. The earlier version let the
+ * panel grow and asked the embedding page to resize the iframe, so until that message
+ * landed the frame kept the 150px a replaced element defaults to and the customer saw a
+ * cropped card with no Allow button.
+ */
+
+:root {
+  color-scheme: light dark;
+
+  --ink: #0f1419;
+  --ink-soft: #4a5560;
+  --muted: #626d79;
+  --line: #dfe4ea;
+  --line-strong: #c3ccd6;
+  --bg: #ffffff;
+  --bg-sunken: #f5f7f9;
+  --accent: #0b4fd8;
+  --accent-hover: #0a45bd;
+  --accent-ink: #ffffff;
+  --accent-edge: #0b4fd8;
+  --stop: #b3241c;
+  --stop-hover: #9a1e17;
+  --live: #0d8a45;
+  --warn-bg: #fff6e5;
+  --warn-line: #edd6a6;
+  --warn-ink: #6b4200;
+  --shadow: 0 12px 40px rgba(15, 20, 25, 0.24), 0 2px 8px rgba(15, 20, 25, 0.12);
+  --radius: 16px;
+  --radius-control: 10px;
+  --focus: #0b4fd8;
+}
+
+/* Dark, either because the customer's system asks for it or because the merchant pinned
+   it. A dark site with a blinding white consent panel is most of the "it looks odd"
+   complaint, and a panel that looks out of place is a panel people distrust. */
+:root[data-scheme="dark"],
+:root[data-scheme="auto"] {
+    --ink: #f2f5f8;
+    --ink-soft: #c3ccd6;
+    --muted: #97a3af;
+    --line: #333c46;
+    --line-strong: #4a5560;
+    --bg: #161b21;
+    --bg-sunken: #1f252c;
+    --accent: #5b9bff;
+    --accent-hover: #7aafff;
+    --accent-ink: #06121f;
+    --stop: #ff6b60;
+    --stop-hover: #ff8b82;
+    --live: #4ad486;
+    --warn-bg: #3a2f18;
+    --warn-line: #5c4a24;
+    --warn-ink: #f0d7a4;
+    --shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+    --focus: #7aafff;
+}
+
+/* `auto` only follows the system; `dark` is unconditional. Written as two selectors rather
+   than one media query so the merchant's choice is not itself a media query. */
+@media (prefers-color-scheme: light) {
+  :root[data-scheme="auto"] {
+    --ink: #0f1419;
+    --ink-soft: #4a5560;
+    --muted: #626d79;
+    --line: #dfe4ea;
+    --line-strong: #c3ccd6;
+    --bg: #ffffff;
+    --bg-sunken: #f5f7f9;
+    --accent: #0b4fd8;
+    --accent-hover: #0a45bd;
+    --accent-ink: #ffffff;
+    --stop: #b3241c;
+    --stop-hover: #9a1e17;
+    --live: #0d8a45;
+    --warn-bg: #fff6e5;
+    --warn-line: #edd6a6;
+    --warn-ink: #6b4200;
+    --shadow: 0 12px 40px rgba(15, 20, 25, 0.24), 0 2px 8px rgba(15, 20, 25, 0.12);
+    --focus: #0b4fd8;
+  }
+}
+
+/* A customer who has asked for more contrast gets borders that do not depend on a
+   subtle grey being visible on their screen. */
+@media (prefers-contrast: more) {
+  :root {
+    --line: var(--ink);
+    --line-strong: var(--ink);
+    --muted: var(--ink);
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  /* Both, and `html` is the one that matters.
+   *
+   * `:root` declares `color-scheme: light dark` so the browser's own controls and scrollbars
+   * match the panel. A side effect of `color-scheme` is that the user agent paints the
+   * document's canvas — white in light, near-black in dark — instead of leaving it
+   * transparent, and the canvas is the FRAME's rectangle, not the card's. In the indicator
+   * state the card is a 14px-rounded box filling a 400x96 frame, so an opaque canvas shows as
+   * four square corners behind a rounded card.
+   *
+   * `body` alone was transparent, which is not where the canvas comes from. */
+  background: transparent;
+}
+
+body {
+  font: 15px/1.5 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica,
+    Arial, sans-serif;
+  color: var(--ink);
+  background: transparent;
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+  -webkit-text-size-adjust: 100%;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+/* ---------------------------------------------------------------------------
+   The shell. One element, two shapes, chosen by a class the script sets — never
+   by the size of what is inside it.
+   --------------------------------------------------------------------------- */
+
+.shell {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+/* ASK — a modal card on a full-viewport surface. */
+.shell[data-shape="ask"] {
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+
+.shell[data-shape="ask"] .card {
+  width: 100%;
+  max-width: 440px;
+  /* `dvh` so a phone's collapsing address bar does not crop the actions. */
+  max-height: min(88dvh, 620px);
+}
+
+/* INDICATOR — the whole frame is the badge; the SDK has already sized it.
+   A grid rather than the ask's column, because the badge is a ROW: status on the left,
+   controls on the right, and the warning strip across the bottom when there is one. As a
+   column the two stacked and overflowed the height the SDK had allocated, which put the
+   Stop button one pixel outside the frame and therefore outside the viewport. */
+.shell[data-shape="indicator"] {
+  padding: 0;
+}
+
+.shell[data-shape="indicator"] .card {
+  width: 100%;
+  height: 100%;
+  border-radius: 14px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-rows: minmax(0, 1fr) auto;
+  align-items: center;
+}
+
+.shell[data-shape="indicator"] main {
+  grid-column: 1;
+  grid-row: 1;
+  min-width: 0;
+}
+
+.shell[data-shape="indicator"] footer {
+  grid-column: 2;
+  grid-row: 1;
+}
+
+.shell[data-shape="indicator"] .warn {
+  grid-column: 1 / -1;
+  grid-row: 2;
+}
+
+/* Phones: the ask becomes a bottom sheet and the actions stack. */
+@media (max-width: 559px) {
+  .shell[data-shape="ask"] {
+    padding: 0;
+    justify-content: flex-end;
+  }
+
+  .shell[data-shape="ask"] .card {
+    max-width: none;
+    max-height: 92dvh;
+    border-radius: 20px 20px 0 0;
+    border-bottom: 0;
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  footer {
+    flex-direction: column-reverse;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Header — who is asking, and where. The two facts the customer can check.
+   --------------------------------------------------------------------------- */
+
+header {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--line);
+  background: var(--bg-sunken);
+}
+
+header img {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  object-fit: contain;
+  flex: none;
+  background: var(--bg);
+}
+
+.identity {
+  min-width: 0;
+  flex: 1;
+}
+
+.who {
+  font-weight: 650;
+  font-size: 14px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* The origin the BROWSER reported to this frame, not anything the page told us. That
+   distinction is the whole of "anchor to the origin, do not assert a name": the customer
+   can check it against their own address bar, and no integrator can forge it. */
+.origin {
+  color: var(--muted);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  direction: ltr;
+}
+
+.shell[data-shape="indicator"] header {
+  display: none;
+}
+
+/* ---------------------------------------------------------------------------
+   Body
+   --------------------------------------------------------------------------- */
+
+main {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 16px;
+}
+
+.shell[data-shape="indicator"] main {
+  display: flex;
+  align-items: center;
+  padding: 12px 14px;
+  overflow: hidden;
+}
+
+h1 {
+  font-size: 17px;
+  line-height: 1.3;
+  margin: 0 0 8px;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+}
+
+p {
+  margin: 0;
+  color: var(--ink-soft);
+}
+
+/* The signed text, verbatim. It is what the digest covers, so it is the body copy rather
+   than a summary of it. */
+.terms {
+  color: var(--ink);
+}
+
+.verify {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+  font-size: 12.5px;
+  color: var(--muted);
+}
+
+/* ---------------------------------------------------------------------------
+   Live state
+   --------------------------------------------------------------------------- */
+
+.status {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  flex: 1;
+}
+
+.dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--muted);
+  flex: none;
+}
+
+.dot[data-watching="true"] {
+  background: var(--live);
+  animation: pulse 1.8s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dot[data-watching="true"] {
+    animation: none;
+  }
+}
+
+@keyframes pulse {
+  50% {
+    opacity: 0.3;
+  }
+}
+
+.status-text {
+  min-width: 0;
+}
+
+.live-label {
+  font-weight: 650;
+  font-size: 14px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.live-detail {
+  color: var(--muted);
+  font-size: 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ---------------------------------------------------------------------------
+   Actions — pinned, and never smaller than a finger.
+   --------------------------------------------------------------------------- */
+
+footer {
+  flex: none;
+  display: flex;
+  gap: 8px;
+  padding: 12px 16px;
+  border-top: 1px solid var(--line);
+  background: var(--bg);
+}
+
+.shell[data-shape="indicator"] footer {
+  border-top: 0;
+  background: transparent;
+  padding: 0 14px 0 0;
+  align-items: center;
+}
+
+button {
+  flex: 1;
+  font: inherit;
+  font-weight: 600;
+  /* 44px is the smallest reliably tappable target. The Allow and Stop controls are the
+     two most consequential buttons in the product and neither may be fiddly. */
+  min-height: 44px;
+  padding: 10px 14px;
+  border-radius: var(--radius-control);
+  border: 1px solid var(--line-strong);
+  background: var(--bg);
+  color: var(--ink);
+  cursor: pointer;
+  white-space: nowrap;
+  touch-action: manipulation;
+}
+
+.shell[data-shape="indicator"] button {
+  flex: none;
+  min-height: 40px;
+  padding: 8px 14px;
+  font-size: 14px;
+}
+
+button:hover:not(:disabled) {
+  background: var(--bg-sunken);
+}
+
+button:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+
+button.primary {
+  background: var(--accent);
+  /* Usually the accent itself; a derived darker shade when the accent is too close to the
+     card to be findable on its own. Never a colour the merchant supplied separately. */
+  border-color: var(--accent-edge, var(--accent));
+  color: var(--accent-ink);
+}
+
+button.primary:hover:not(:disabled) {
+  /* Derived rather than configured. A merchant supplies one colour and the hover state
+     follows from it, so there is no way to theme a button whose hover state is invisible. */
+  background: var(--accent-hover);
+  filter: brightness(1.08);
+}
+
+button.stop {
+  background: var(--stop);
+  border-color: var(--stop);
+  color: #fff;
+}
+
+button.stop:hover:not(:disabled) {
+  background: var(--stop-hover);
+}
+
+button:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+/* ---------------------------------------------------------------------------
+   The warning strip. Present in the `indicator-alert` shape, which the SDK sizes
+   for — so it appears without anything being pushed anywhere.
+   --------------------------------------------------------------------------- */
+
+.warn {
+  flex: none;
+  background: var(--warn-bg);
+  border-top: 1px solid var(--warn-line);
+  color: var(--warn-ink);
+  padding: 9px 14px;
+  font-size: 12.5px;
+  line-height: 1.35;
+}
+
+/* Screen-reader-only, for the announcements a sighted customer reads from the panel. */
+.sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}

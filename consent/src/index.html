@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Remote assistance</title>
+<!--
+  Served from consent.skynet-initiative.com and embedded, cross-origin, in pages we do not
+  control. The merchant's page cannot read inside here and cannot script it — not by policy,
+  by the same-origin policy, which is the browser playing the role UIPI plays on the desktop
+  (docs/03-trust-model.md §2a).
+
+  `frame-ancestors` is deliberately ABSENT: this has to be embeddable by any merchant page,
+  and its protection is that its contents are unreachable rather than that framing is
+  refused. Clickjacking is answered by the browser's top layer, by the geometry self-checks
+  in consent.js and by the SDK's occlusion check — not by a header.
+
+  ## Can this panel be faked?
+
+  A merchant's page can draw a pixel-perfect copy of this card. It gains nothing by it, and
+  the reason is worth stating in the surface it applies to:
+
+   - **A fake panel cannot produce consent.** The session private key is generated here,
+     is non-extractable, and never leaves this origin. The engine accepts a signature only
+     over the descriptor it issued, and only from a socket whose browser-set `Origin` is
+     this one. A copy of these pixels produces no signature and therefore no session.
+   - **A fake panel cannot hide the real one.** The real one is in the browser's top layer,
+     above every stacking context and unaffected by an ancestor's transform, filter or
+     opacity.
+   - **A fake "stop" cannot make sharing continue invisibly.** If the real panel is covered,
+     faded, scrolled away or detached, both the geometry checks below and the SDK's
+     independent occlusion check narrow the capability to zero surfaces. Hiding this panel
+     stops the session; it does not conceal it.
+
+  LAYOUT RULE: see styles.css. Nothing here may size itself from its content.
+-->
+<meta http-equiv="Content-Security-Policy" content="
+  default-src 'none';
+  script-src 'self';
+  style-src 'unsafe-inline';
+  img-src https: data:;
+  connect-src wss://remote.skynet-initiative.com ws://localhost:* ws://127.0.0.1:*;
+  base-uri 'none';
+  form-action 'none'">
+<style>/* STYLES */</style>
+</head>
+<body>
+  <!--
+    `role="dialog"` with `aria-modal` in the ask shape: the SDK opens this frame's host as a
+    real `<dialog>` with `showModal()`, so the browser has already made the rest of the
+    embedding page inert. The attributes here describe the same fact to assistive
+    technology on the inside of the frame boundary, which cannot see the outside.
+  -->
+  <div class="shell" id="shell" data-shape="ask" role="dialog" aria-modal="true"
+       aria-labelledby="ask-title" aria-describedby="scope">
+    <div class="card">
+      <header>
+        <img id="logo" alt="" hidden referrerpolicy="no-referrer">
+        <div class="identity">
+          <div class="who" id="who">Remote assistance</div>
+          <div class="origin" id="origin">connecting…</div>
+        </div>
+      </header>
+
+      <main id="body">
+        <section id="loading">
+          <p id="loading-text">Connecting…</p>
+        </section>
+
+        <section id="ask" hidden>
+          <h1 id="ask-title">Share this page with support?</h1>
+          <!-- The signed text, verbatim. It is what the digest covers, so it is the body
+               copy rather than a summary of it. -->
+          <p class="terms" id="scope"></p>
+          <p class="verify" id="verify"></p>
+        </section>
+
+        <section id="live" hidden>
+          <div class="status">
+            <span class="dot" id="dot" data-watching="false"></span>
+            <span class="status-text">
+              <span class="live-label" id="live-label">Sharing</span>
+              <span class="live-detail" id="live-detail"></span>
+            </span>
+          </div>
+        </section>
+
+        <section id="over" hidden>
+          <h1 id="over-title">Sharing has stopped</h1>
+          <p id="over-detail"></p>
+        </section>
+      </main>
+
+      <div class="warn" id="warn" hidden></div>
+
+      <footer id="ask-actions" hidden>
+        <button id="deny" type="button">Not now</button>
+        <button id="allow" type="button" class="primary">Allow</button>
+      </footer>
+
+      <footer id="live-actions" hidden>
+        <button id="view-only" type="button" hidden>View only</button>
+        <button id="stop" type="button" class="stop">Stop</button>
+      </footer>
+
+      <footer id="over-actions" hidden>
+        <button id="close" type="button">Close</button>
+      </footer>
+    </div>
+  </div>
+
+  <!-- Every state change is announced, because a customer who cannot see the dot has to be
+       told that someone started or stopped watching. -->
+  <p class="sr" id="announce" role="status" aria-live="polite"></p>
+
+  <script type="module" src="consent.js"></script>
+</body>
+</html>

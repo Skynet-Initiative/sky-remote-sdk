@@ -1,0 +1,12 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "composite": false,
+    "declaration": true,
+    "declarationMap": false,
+    "sourceMap": false,
+    "outDir": "./.types",
+    "rootDir": "."
+  },
+  "include": ["protocol/src/**/*.ts", "sdk/src/**/*.ts", "mirror/src/**/*.ts", "consent/src/**/*.ts"]
+}

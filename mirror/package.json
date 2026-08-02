@@ -1,0 +1,30 @@
+{
+  "name": "@skynet-initiative/sky-remote-mirror",
+  "description": "The agent-side rebuilder for the sky-remote co-browse mirror. Consumed by the Skynet dashboard; vendored, not published.",
+  "type": "module",
+  "license": "BUSL-1.1",
+  "sideEffects": false,
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/types/mirror/src/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/types/mirror/src/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "node ../build.mjs --only=mirror"
+  },
+  "dependencies": {},
+  "private": true,
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Skynet-Initiative/sky-remote-sdk.git",
+    "directory": "mirror"
+  }
+}

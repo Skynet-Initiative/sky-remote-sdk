@@ -1,0 +1,53 @@
+<!doctype html>
+<!--
+  A merchant's page, with nothing of ours visible on it.
+
+  This is the integration the product actually asks for: the site owns its own launcher and
+  its own styling, and the SDK contributes exactly one visible thing — the consent surface,
+  which is on our origin and is the one piece a merchant may not restyle, reskin or
+  reproduce.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cyclo — Basket</title>
+<style>
+  body { font: 16px/1.6 system-ui, sans-serif; margin: 0; color: #14202c; }
+  header { padding: 14px 20px; background: #0b3d91; color: #fff; font-weight: 700; }
+  main { padding: 20px; max-width: 640px; }
+  .filler { height: 2400px; background: linear-gradient(#fff, #eef2f7); }
+  /* The merchant's own launcher, styled by them. */
+  #help { background: #0b3d91; color: #fff; border: 0; border-radius: 999px;
+          padding: 12px 20px; font: inherit; font-weight: 600; cursor: pointer; }
+</style>
+</head>
+<body>
+  <header>Cyclo</header>
+  <main>
+    <h1>Basket</h1>
+    <p>Two items, shipping to Lyon.</p>
+    <button id="help" type="button">Get help with this page</button>
+    <p id="status">idle</p>
+    <div class="filler"></div>
+  </main>
+
+  <script src="/sdk/sky.js"></script>
+  <script>
+    Sky.configure({
+      workspace: "pk_live_harness",
+      signal: "ws://localhost:4182",
+      consent: "http://localhost:4181/"
+    });
+    Sky.on("state", function (d) { document.getElementById("status").textContent = d.state; });
+    window.__events = [];
+    ["queued","invited","consented","capability","obscured","visible","ended","cancelled","error","degraded"]
+      .forEach(function (name) {
+        Sky.on(name, function (detail) { window.__events.push({ name: name, detail: detail }); });
+      });
+    document.getElementById("help").addEventListener("click", function () {
+      Sky.present("inv_harness", "sess_harness_" + Date.now());
+    });
+  </script>
+</body>
+</html>

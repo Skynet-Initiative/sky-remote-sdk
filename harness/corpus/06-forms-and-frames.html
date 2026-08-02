@@ -1,0 +1,50 @@
+<!doctype html>
+<!--
+  S-8 #6 — form state that lives in properties rather than attributes, and layout that
+  depends on the viewport being the customer's rather than the console's.
+
+  A checkbox's `checked`, a select's `selected` option and a field's typed value are all
+  properties: a serializer that copies attributes shows the agent the page's initial state
+  instead of what the customer did. The media query below resolves differently at 500px and
+  at 1200px, so a console that reflows the mirror into its own panel width shows a layout
+  that never existed on the customer's screen.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Forms</title>
+<style>
+  body { font: 16px/1.5 system-ui, sans-serif; margin: 20px; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; max-width: 640px; }
+  @media (max-width: 700px) { .grid { grid-template-columns: 1fr; } }
+  fieldset { border: 1px solid #c3ccd6; border-radius: 10px; }
+  .wide { background: #eef7ee; }
+</style>
+</head>
+<body>
+  <div class="grid" data-probe="grid">
+    <fieldset data-probe="fs1">
+      <legend>Delivery</legend>
+      <label><input type="checkbox" id="express" data-probe="check"> Express</label><br>
+      <label>Note <textarea id="note" data-probe="note"></textarea></label>
+    </fieldset>
+    <fieldset data-probe="fs2">
+      <legend>Payment</legend>
+      <label>Method
+        <select id="method" data-probe="select">
+          <option value="card">Card</option>
+          <option value="sepa">SEPA</option>
+          <option value="paypal">PayPal</option>
+        </select>
+      </label><br>
+      <label>Email <input type="email" id="email" data-probe="email" value=""></label>
+    </fieldset>
+  </div>
+  <script>
+    document.getElementById("express").checked = true;
+    document.getElementById("method").value = "sepa";
+    document.getElementById("note").value = "Leave with the concierge";
+    document.getElementById("email").value = "jane@example.fr";
+  </script>
+</body>
+</html>
